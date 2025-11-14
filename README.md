@@ -1,98 +1,153 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+﻿# 📘 Finanzas Personales API – Proyecto 2
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend desarrollado con NestJS, PostgreSQL (Supabase) y el patrón de diseño Builder, como continuación del Dashboard de Finanzas Personales del Proyecto 1 del curso de Diseño de Bases de Datos.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🧩 Descripción General
 
-## Description
+Esta API permite que un usuario:
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Gestione transacciones (ingresos y gastos).
+- Cree y administre metas de ahorro.
+- Obtenga un resumen financiero construido mediante el patrón Builder.
+- Se autentique mediante JWT.
+- Utilice la documentación interactiva generada con Swagger.
 
-## Project setup
+Este backend será desplegado en Azure como parte del proyecto.
 
-```bash
-$ npm install
+## 🏗️ Tecnologías Utilizadas
+
+| Tecnología | Uso |
+| --- | --- |
+| NestJS | Arquitectura modular del backend |
+| TypeScript | Tipado estático y robustez |
+| PostgreSQL (Supabase) | Base de datos |
+| TypeORM | ORM para entidades y migraciones |
+| JWT | Autenticación |
+| Swagger / OpenAPI | Documentación del API |
+| Azure App Service | Despliegue final |
+
+## 🧱 Arquitectura del Proyecto
+
+El sistema está construido con una arquitectura modular:
+
+```text
+src/
+├── auth/
+├── users/
+├── transactions/
+├── goals/
+├── dashboard/
+│   └── builder/
+├── common/
+└── config/
 ```
 
-## Compile and run the project
+**Patrón de diseño utilizado: Builder**
 
-```bash
-# development
-$ npm run start
+Se aplica en el módulo `dashboard/` para construir un objeto complejo llamado `DashboardSummary`, el cual combina:
 
-# watch mode
-$ npm run start:dev
+- Totales de ingresos
+- Totales de gastos
+- Balance final
+- Estado y avance de metas de ahorro
+- Cantidad de transacciones
+- Otros datos del dashboard
 
-# production mode
-$ npm run start:prod
-```
+El uso del Builder permite:
 
-## Run tests
+- Construir el resumen paso a paso
+- Extender métricas sin romper código
+- Mantener el cálculo desacoplado
+- Proveer un endpoint `/dashboard/summary` limpio y mantenible
 
-```bash
-# unit tests
-$ npm run test
+## 📌 Endpoints Principales
 
-# e2e tests
-$ npm run test:e2e
+**🔐 Autenticación**
 
-# test coverage
-$ npm run test:cov
-```
+- `POST /auth/register` – Registrar usuario
+- `POST /auth/login` – Iniciar sesión (JWT)
+- `GET /auth/me` – Obtener perfil autenticado
 
-## Deployment
+**💸 Transacciones**
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- `GET /transactions`
+- `POST /transactions`
+- `GET /transactions/:id`
+- `PUT /transactions/:id`
+- `DELETE /transactions/:id`
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+**🎯 Metas de Ahorro**
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+- `GET /goals`
+- `POST /goals`
+- `PATCH /goals/:id/contribute`
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+**📊 Dashboard**
 
-## Resources
+- `GET /dashboard/summary` – Construido con Builder
 
-Check out a few resources that may come in handy when working with NestJS:
+La documentación completa estará disponible en Swagger en `http://localhost:3000/api`.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## 🛠️ Instalación y Ejecución Local
 
-## Support
+1. Clonar el repositorio
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+   ```bash
+   git clone https://github.com/kendall122/finanzas-personales-api.git
+   cd finanzas-personales-api
+   ```
 
-## Stay in touch
+2. Instalar dependencias
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+   ```bash
+   npm install
+   ```
 
-## License
+3. Configurar variables de entorno
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+   Copiar el archivo de ejemplo:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Editar los valores según Supabase:
+
+   ```env
+   DATABASE_URL=postgresql://usuario:password@host:5432/database
+   JWT_SECRET=supersecreto123
+   PORT=3000
+   ```
+
+4. Ejecutar en desarrollo
+
+   ```bash
+   npm run start:dev
+   ```
+
+## 🔐 Variables de Entorno (`.env`)
+
+| Variable | Descripción |
+| --- | --- |
+| `DATABASE_URL` | URL de conexión a PostgreSQL (Supabase) |
+| `JWT_SECRET` | Clave secreta para firmar tokens |
+| `PORT` | Puerto de ejecución del servidor |
+
+## 🚀 Despliegue en Azure
+
+El proyecto se desplegará utilizando Azure App Service con:
+
+- Pipeline de despliegue automático opcional (CI/CD)
+- Variables de entorno seguras en el panel de Azure
+- Instancia vinculada a la base de datos de Supabase
+
+La URL final del despliegue se incluirá aquí cuando esté lista.
+
+## 👥 Autores del Proyecto
+
+- Kendall Montero
+- (Agregar nombres de tus compañeros si aplica)
+
+## 📚 Licencia
+
+Este proyecto es únicamente para fines académicos.
