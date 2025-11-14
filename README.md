@@ -145,8 +145,9 @@ La URL final del despliegue se incluirá aquí cuando esté lista.
 
 ## 👥 Autores del Proyecto
 
-- Kendall Montero
-- (Agregar nombres de tus compañeros si aplica)
+- Kendall Ramirez Montero
+- Jeremy Montero Araya
+- Deck yariel cuadra gonzalez
 
 ## 📚 Licencia
 
