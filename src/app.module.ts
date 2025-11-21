@@ -5,6 +5,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { TransactionsModule } from './transactions/transactions.module';
+import { GoalsModule } from './goals/goals.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -17,19 +20,16 @@ import { AuthModule } from './auth/auth.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const parseBool = (value: string | undefined, fallback = 'false') => {
-          const raw = (value ?? fallback).toLowerCase();
-          return raw === 'true' || raw === '1';
-        };
-
+        const nodeEnv = configService.get<string>('NODE_ENV') ?? process.env.NODE_ENV ?? 'development';
+        const isDevelopment = nodeEnv === 'development';
         const parsePort = (value: string | number | undefined, fallback = 5432) => {
           const parsed = Number(value ?? fallback);
           return Number.isNaN(parsed) ? fallback : parsed;
         };
 
         const dbUrl = configService.get<string>('DATABASE_URL');
-        const sslEnabled = parseBool(configService.get<string>('DB_SSL'), 'true');
-        const synchronize = parseBool(configService.get<string>('DB_SYNC'), 'false');
+        const sslEnabled = (configService.get<string>('DB_SSL') ?? 'true').toLowerCase() !== 'false';
+        const synchronize = isDevelopment;
 
         if (dbUrl) {
           return {
@@ -56,6 +56,9 @@ import { AuthModule } from './auth/auth.module';
     }),
     UsersModule,
     AuthModule,
+    TransactionsModule,
+    GoalsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

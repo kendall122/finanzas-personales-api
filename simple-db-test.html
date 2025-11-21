@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tester simple DB</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #111;
+        color: #eee;
+        margin: 0;
+        padding: 16px;
+      }
+      h1,
+      h2 {
+        margin-top: 0;
+      }
+      .card {
+        border: 1px solid #333;
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 8px;
+        background: #161616;
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+      }
+      input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 12px;
+        border: 1px solid #444;
+        border-radius: 4px;
+        background: #0f0f0f;
+        color: #eee;
+      }
+      button {
+        padding: 10px 14px;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        border: none;
+        border-radius: 4px;
+        background: #2d7ff9;
+        color: #fff;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #1c5ece;
+      }
+      pre {
+        background: #0c0c0c;
+        color: #8ce68c;
+        padding: 12px;
+        border-radius: 6px;
+        overflow: auto;
+      }
+      .token-box {
+        background: #0c0c0c;
+        padding: 8px;
+        border-radius: 6px;
+        word-break: break-all;
+        border: 1px solid #333;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Pruebas rápidas de API</h1>
+    <p>Usa esta página para probar login y endpoints de transacciones desde el navegador.</p>
+
+    <div class="card">
+      <h2>Config</h2>
+      <p><strong>API_BASE</strong>: <span id="apiBaseLabel"></span></p>
+    </div>
+
+    <div class="card">
+      <h2>Autenticación</h2>
+      <label>
+        Email
+        <input id="email" type="email" placeholder="usuario@example.com" />
+      </label>
+      <label>
+        Password
+        <input id="password" type="password" placeholder="tu contraseña" />
+      </label>
+      <button onclick="register()">Registrar usuario</button>
+      <button onclick="login()">Iniciar sesión</button>
+      <p><strong>Token JWT:</strong></p>
+      <div id="tokenBox" class="token-box">Aún no autenticado</div>
+    </div>
+
+    <div class="card">
+      <h2>Operaciones de transacciones</h2>
+      <button onclick="insertTransaction()">INSERT (crear)</button>
+      <button onclick="getTransactions()">SELECT (listar)</button>
+      <div style="margin-top: 12px; margin-bottom: 8px;">
+        <input id="deleteId" type="number" placeholder="ID a borrar" />
+        <button onclick="deleteTransaction()">DELETE (borrar)</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Resultados</h2>
+      <pre id="output">Esperando acciones...</pre>
+    </div>
+
+    <script>
+      // URL base de la API; cámbiala si despliegas en Azure u otro host.
+      const API_BASE = 'http://localhost:3000';
+      let token = null; // almacena el JWT tras login
+
+      document.getElementById('apiBaseLabel').textContent = API_BASE;
+
+      const output = document.getElementById('output');
+      const tokenBox = document.getElementById('tokenBox');
+
+      // Helpers
+      function setOutput(data) {
+        output.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      }
+
+      function authHeader() {
+        return token ? { Authorization: `Bearer ${token}` } : {};
+      }
+
+      async function register() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const payload = { name: email.split('@')[0] || 'User', email, password };
+
+        try {
+          const res = await fetch(`${API_BASE}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          setOutput(data);
+        } catch (err) {
+          setOutput(err.message);
+        }
+      }
+
+      async function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const payload = { email, password };
+
+        try {
+          const res = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          setOutput(data);
+          token = data?.access_token;
+          tokenBox.textContent = token ? token : 'Login fallido';
+        } catch (err) {
+          setOutput(err.message);
+        }
+      }
+
+      async function insertTransaction() {
+        if (!token) {
+          alert('Primero inicia sesión para obtener un token.');
+          return;
+        }
+        const randomAmount = Number((Math.random() * 100).toFixed(2));
+        const payload = {
+          type: 'INGRESO',
+          description: 'Prueba automática',
+          amount: randomAmount,
+          date: new Date().toISOString(),
+          category: 'TEST',
+        };
+
+        try {
+          const res = await fetch(`${API_BASE}/transactions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...authHeader() },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          setOutput(data);
+        } catch (err) {
+          setOutput(err.message);
+        }
+      }
+
+      async function getTransactions() {
+        if (!token) {
+          alert('Primero inicia sesión para obtener un token.');
+          return;
+        }
+        try {
+          const res = await fetch(`${API_BASE}/transactions`, {
+            headers: { ...authHeader() },
+          });
+          const data = await res.json();
+          setOutput(data);
+        } catch (err) {
+          setOutput(err.message);
+        }
+      }
+
+      async function deleteTransaction() {
+        if (!token) {
+          alert('Primero inicia sesión para obtener un token.');
+          return;
+        }
+        const id = document.getElementById('deleteId').value;
+        if (!id) {
+          alert('Ingresa un ID para borrar.');
+          return;
+        }
+        try {
+          const res = await fetch(`${API_BASE}/transactions/${id}`, {
+            method: 'DELETE',
+            headers: { ...authHeader() },
+          });
+          if (res.ok) {
+            setOutput({ deleted: true, id });
+          } else {
+            const data = await res.json();
+            setOutput(data);
+          }
+        } catch (err) {
+          setOutput(err.message);
+        }
+      }
+    </script>
+  </body>
+</html>
